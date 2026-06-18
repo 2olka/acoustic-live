@@ -6,243 +6,80 @@
 <title>Acoustic Live</title>
 <style>
   :root{
-    --bg:#0f0f12;
-    --card:#1a1a20;
-    --accent:#ffb347;
-    --text:#f5f5f5;
-    --muted:#9a9aa5;
+    --bg:#0f0f12; --card:#1a1a20; --accent:#ffb347; --text:#f5f5f5; --muted:#9a9aa5;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    min-height:100vh;
-    line-height:1.5;
-  }
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;line-height:1.5;}
   .wrap{max-width:800px;margin:0 auto;padding:20px;}
-
-  header{
-    text-align:center;
-    padding:18px 0 10px;
-  }
-  .logo{
-    font-size:30px;
-    font-weight:800;
-    letter-spacing:1px;
-    background:linear-gradient(90deg,#ffb347,#ffcc70);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-  }
+  header{text-align:center;padding:18px 0 10px;}
+  .logo{font-size:30px;font-weight:800;letter-spacing:1px;background:linear-gradient(90deg,#ffb347,#ffcc70);-webkit-background-clip:text;background-clip:text;color:transparent;}
   .subtitle{color:var(--muted);font-size:13px;margin-top:4px;}
-
-  /* viewer */
-  .song-title{
-    font-size:26px;
-    font-weight:700;
-    color:var(--accent);
-    text-align:center;
-    margin:24px 0 18px;
-  }
-  .lyrics{
-    font-size:24px;
-    line-height:1.7;
-    white-space:pre-wrap;
-    text-align:center;
-    padding-bottom:60px;
-  }
-  .empty{
-    color:var(--muted);
-    text-align:center;
-    margin-top:60px;
-    font-size:18px;
-  }
-
-  /* social */
-  .social{
-    display:flex;
-    gap:14px;
-    justify-content:center;
-    margin:18px 0;
-  }
-  .social a{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    background:var(--card);
-    color:var(--text);
-    text-decoration:none;
-    padding:10px 16px;
-    border-radius:30px;
-    font-size:14px;
-    border:1px solid #2a2a33;
-  }
+  .song-title{font-size:26px;font-weight:700;color:var(--accent);text-align:center;margin:24px 0 18px;}
+  .lyrics{font-size:24px;line-height:1.7;white-space:pre-wrap;text-align:center;padding-bottom:60px;}
+  .empty{color:var(--muted);text-align:center;margin-top:60px;font-size:18px;}
+  .social{display:flex;gap:14px;justify-content:center;margin:18px 0;}
+  .social a{display:inline-flex;align-items:center;gap:6px;background:var(--card);color:var(--text);text-decoration:none;padding:10px 16px;border-radius:30px;font-size:14px;border:1px solid #2a2a33;}
   .social a:active{background:#23232b;}
-
-  /* gear button */
-  .gear{
-    position:fixed;
-    right:16px;
-    bottom:16px;
-    background:var(--card);
-    border:1px solid #2a2a33;
-    color:var(--text);
-    padding:12px 16px;
-    border-radius:30px;
-    font-size:14px;
-    cursor:pointer;
-    z-index:50;
-  }
-
-  /* modal */
-  .overlay{
-    position:fixed;inset:0;
-    background:rgba(0,0,0,.7);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    z-index:100;
-    padding:20px;
-  }
+  .gear{position:fixed;right:16px;bottom:16px;background:var(--card);border:1px solid #2a2a33;color:var(--text);padding:12px 16px;border-radius:30px;font-size:14px;cursor:pointer;z-index:50;}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;}
   .overlay.show{display:flex;}
-  .modal{
-    background:var(--card);
-    border-radius:18px;
-    padding:24px;
-    width:100%;
-    max-width:340px;
-    text-align:center;
-  }
+  .modal{background:var(--card);border-radius:18px;padding:24px;width:100%;max-width:340px;text-align:center;}
   .modal h2{margin-bottom:16px;font-size:20px;}
-  input[type=password],input[type=text],textarea{
-    width:100%;
-    background:#0f0f12;
-    border:1px solid #2a2a33;
-    color:var(--text);
-    padding:14px;
-    border-radius:12px;
-    font-size:18px;
-    margin-bottom:12px;
-    font-family:inherit;
-  }
+  input[type=password],input[type=text],textarea{width:100%;background:#0f0f12;border:1px solid #2a2a33;color:var(--text);padding:14px;border-radius:12px;font-size:18px;margin-bottom:12px;font-family:inherit;}
   textarea{min-height:200px;resize:vertical;line-height:1.5;}
-
-  .btn{
-    display:block;
-    width:100%;
-    background:var(--accent);
-    color:#1a1a20;
-    border:none;
-    padding:16px;
-    border-radius:12px;
-    font-size:17px;
-    font-weight:700;
-    cursor:pointer;
-    margin-top:6px;
-  }
+  .btn{display:block;width:100%;background:var(--accent);color:#1a1a20;border:none;padding:16px;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;margin-top:6px;}
   .btn:active{opacity:.85;}
   .btn.secondary{background:#2a2a33;color:var(--text);}
-  .btn.danger{background:#3a1f24;color:#ff8080;}
-
   .error{color:#ff8080;font-size:14px;margin-bottom:10px;min-height:18px;}
-
-  /* admin */
   #admin{display:none;}
-  .admin-head{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:16px;
-    flex-wrap:wrap;
-    gap:10px;
-  }
+  .admin-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
   .admin-head h2{font-size:22px;color:var(--accent);}
   .search{margin-bottom:14px;}
   .search input{margin-bottom:0;}
-
-  .song-row{
-    background:var(--card);
-    border:1px solid #2a2a33;
-    border-radius:14px;
-    padding:14px;
-    margin-bottom:12px;
-  }
-  .song-row .top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-  }
+  .song-row{background:var(--card);border:1px solid #2a2a33;border-radius:14px;padding:14px;margin-bottom:12px;}
+  .song-row .top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
   .song-row .name{font-size:17px;font-weight:600;flex:1;}
   .row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
-  .mini{
-    flex:1;
-    min-width:90px;
-    padding:12px;
-    border-radius:10px;
-    border:none;
-    font-size:14px;
-    font-weight:600;
-    cursor:pointer;
-  }
+  .mini{flex:1;min-width:90px;padding:12px;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;}
   .mini.show{background:var(--accent);color:#1a1a20;}
   .mini.edit{background:#2a2a33;color:var(--text);}
   .mini.del{background:#3a1f24;color:#ff8080;}
-
-  .active-badge{
-    font-size:12px;
-    color:var(--accent);
-    border:1px solid var(--accent);
-    padding:2px 8px;
-    border-radius:20px;
-  }
+  .active-badge{font-size:12px;color:var(--accent);border:1px solid var(--accent);padding:2px 8px;border-radius:20px;}
   .add-btn{margin-bottom:20px;}
-  .editor{display:none;}
-  .editor label{display:block;text-align:left;font-size:14px;color:var(--muted);margin-bottom:4px;}
+  .status{text-align:center;font-size:12px;color:var(--muted);margin-bottom:10px;}
 </style>
 </head>
 <body>
 
-<!-- ====== VIEWER ====== -->
 <div id="viewer">
   <div class="wrap">
     <header>
       <div class="logo">Acoustic Live</div>
       <div class="subtitle">Музыкальный квартирник</div>
     </header>
-
     <div class="social">
       <a href="https://vk.ru/club238122270" target="_blank" rel="noopener">VK</a>
       <a href="https://www.instagram.com/a_coustic.live" target="_blank" rel="noopener">Instagram</a>
     </div>
-
     <div id="viewerContent">
-      <div class="empty">Ожидаем начало выступления…</div>
+      <div class="empty">Подключение…</div>
     </div>
   </div>
   <button class="gear" onclick="openPin()">⚙ Управление</button>
 </div>
 
-<!-- ====== ADMIN ====== -->
 <div id="admin">
   <div class="wrap">
     <div class="admin-head">
       <h2>Панель управления</h2>
       <button class="btn secondary" style="width:auto;padding:10px 16px;margin:0" onclick="exitAdmin()">Выйти</button>
     </div>
-
     <button class="btn add-btn" onclick="newSong()">＋ Добавить песню</button>
-
-    <div class="search">
-      <input type="text" id="searchInput" placeholder="Поиск песни…" oninput="renderList()">
-    </div>
-
+    <div class="search"><input type="text" id="searchInput" placeholder="Поиск песни…" oninput="renderList()"></div>
     <div id="songList"></div>
   </div>
 </div>
 
-<!-- ====== PIN MODAL ====== -->
 <div class="overlay" id="pinOverlay">
   <div class="modal">
     <h2>Вход в управление</h2>
@@ -253,26 +90,38 @@
   </div>
 </div>
 
-<!-- ====== EDIT MODAL ====== -->
 <div class="overlay" id="editOverlay">
   <div class="modal" style="max-width:480px;text-align:left;">
     <h2 style="text-align:center;" id="editTitle">Песня</h2>
-    <label>Название</label>
+    <label style="font-size:14px;color:var(--muted);">Название</label>
     <input type="text" id="editName" placeholder="Название песни">
-    <label>Текст</label>
+    <label style="font-size:14px;color:var(--muted);">Текст</label>
     <textarea id="editLyrics" placeholder="Текст песни…"></textarea>
     <button class="btn" onclick="saveSong()">Сохранить</button>
     <button class="btn secondary" onclick="closeEdit()">Отмена</button>
   </div>
 </div>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBXDmNyhJl5EiNstDIuKGh0EgQDVEIKuPg",
+  authDomain: "acoustic-live.firebaseapp.com",
+  databaseURL: "https://acoustic-live-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "acoustic-live",
+  storageBucket: "acoustic-live.firebasestorage.app",
+  messagingSenderId: "749070683055",
+  appId: "1:749070683055:web:63c477897516db17223d5a"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
 const PIN = "5899";
 
-/* ---------- Начальные песни ---------- */
-const defaultSongs = [
-  {id:"pachka", title:"Цой — Пачка сигарет", lyrics:
-`Я сижу и смотрю в чужое небо из чужого окна
+const defaultSongs = {
+  pachka:{title:"Цой — Пачка сигарет",lyrics:`Я сижу и смотрю в чужое небо из чужого окна
 И не вижу ни одной знакомой звезды
 Я ходил по всем дорогам и туда, и сюда
 Обернулся и не смог разглядеть следы
@@ -291,12 +140,8 @@ const defaultSongs = [
 Значит, всё не так уж плохо на сегодняшний день
 И билет на самолёт с серебристым крылом
 Что, взлетая, оставляет земле лишь тень`},
-
-  {id:"osen", title:"ДДТ — Осень", lyrics:
-`Что такое осень? Это небо
+  osen:{title:"ДДТ — Осень",lyrics:`Что такое осень? Это небо
 Плачущее небо под ногами
-В лужах разлетаются птицы с облаками
-Осень, я давно с тобою не был
 В лужах разлетаются птицы с облаками
 Осень, я давно с тобою не был
 
@@ -329,9 +174,7 @@ const defaultSongs = [
 Осень, что я знал о тебе?
 Сколько будет рваться листва
 Осень вечно права`},
-
-  {id:"rayony", title:"Звери — Районы, кварталы", lyrics:
-`Больше нечего ловить
+  rayony:{title:"Звери — Районы, кварталы",lyrics:`Больше нечего ловить
 Всё, что надо, я поймал
 Надо сразу уходить
 Чтоб никто не привыкал
@@ -367,9 +210,7 @@ const defaultSongs = [
 Районы, кварталы, жилые массивы
 Я ухожу, ухожу красиво
 Я ухожу, ухожу красиво`},
-
-  {id:"peremen", title:"Цой — Перемен", lyrics:
-`Вместо тепла — зелень стекла
+  peremen:{title:"Цой — Перемен",lyrics:`Вместо тепла — зелень стекла
 Вместо огня — дым
 Из сетки календаря выхвачен день
 Красное солнце сгорает дотла
@@ -407,9 +248,7 @@ const defaultSongs = [
 В нашем смехе, и в наших слезах, и в пульсации вен
 Перемен
 Мы ждём перемен`},
-
-  {id:"mig", title:"Анофриев — Есть только миг", lyrics:
-`Призрачно всё в этом мире бушующем
+  mig:{title:"Анофриев — Есть только миг",lyrics:`Призрачно всё в этом мире бушующем
 Есть только миг, за него и держись
 Есть только миг между прошлым и будущим
 Именно он называется жизнь
@@ -428,9 +267,7 @@ const defaultSongs = [
 Есть только миг, за него и держись
 Есть только миг между прошлым и будущим
 Именно он называется жизнь`},
-
-  {id:"molody", title:"Градский — Как молоды мы были", lyrics:
-`Оглянись, незнакомый прохожий
+  molody:{title:"Градский — Как молоды мы были",lyrics:`Оглянись, незнакомый прохожий
 Мне твой взгляд неподкупный знаком
 Может, я это, — только моложе
 Не всегда мы себя узнаём
@@ -475,165 +312,124 @@ const defaultSongs = [
 И юность ушедшая всё же бессмертна
 Как молоды мы были
 Как молоды мы были
-Как искренне любили
+��ак искренне любили
 Как верили в себя!`}
-];
+};
 
-/* ---------- Хранилище ---------- */
-function loadSongs(){
-  const s = localStorage.getItem("songs");
-  if(s) return JSON.parse(s);
-  localStorage.setItem("songs", JSON.stringify(defaultSongs));
-  return defaultSongs.slice();
-}
-function saveSongs(){ localStorage.setItem("songs", JSON.stringify(songs)); }
-
-let songs = loadSongs();
+let songs = {};
+let currentSong = null;
 let editingId = null;
 
-/* ---------- Текущая песня (синхронизация между вкладками) ---------- */
-function setCurrent(song){
-  localStorage.setItem("currentSong", JSON.stringify(song));
-  // событие storage не срабатывает в той же вкладке — обновим вручную
-  renderViewer();
-}
-function getCurrent(){
-  const c = localStorage.getItem("currentSong");
-  return c ? JSON.parse(c) : null;
-}
-
-/* реагируем на изменения из другой вкладки */
-window.addEventListener("storage", (e)=>{
-  if(e.key==="currentSong") renderViewer();
-  if(e.key==="songs"){ songs = loadSongs(); renderList(); }
-});
-
-/* ---------- Viewer ---------- */
-function renderViewer(){
-  const cur = getCurrent();
-  const box = document.getElementById("viewerContent");
-  if(!cur){
-    box.innerHTML = '<div class="empty">Ожидаем начало выступления…</div>';
+/* подписка на песни */
+db.ref("songs").on("value", snap=>{
+  const val = snap.val();
+  if(!val){
+    // первый запуск — заливаем песни по умолчанию
+    db.ref("songs").set(defaultSongs);
     return;
   }
-  box.innerHTML =
-    '<div class="song-title">'+escapeHtml(cur.title)+'</div>'+
-    '<div class="lyrics">'+escapeHtml(cur.lyrics)+'</div>';
+  songs = val;
+  renderList();
+});
+
+/* подписка на текущую песню */
+db.ref("currentSong").on("value", snap=>{
+  currentSong = snap.val();
+  renderViewer();
+});
+
+function escapeHtml(t){return (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+function renderViewer(){
+  const box=document.getElementById("viewerContent");
+  if(!currentSong){box.innerHTML='<div class="empty">Ожидаем начало выступления…</div>';return;}
+  box.innerHTML='<div class="song-title">'+escapeHtml(currentSong.title)+'</div><div class="lyrics">'+escapeHtml(currentSong.lyrics)+'</div>';
 }
 
-function escapeHtml(t){
-  return (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-}
-
-/* ---------- PIN ---------- */
+/* PIN */
 function openPin(){
-  if(sessionStorage.getItem("admin")==="1"){ enterAdmin(); return; }
+  if(sessionStorage.getItem("admin")==="1"){enterAdmin();return;}
   document.getElementById("pinError").textContent="";
   document.getElementById("pinInput").value="";
   document.getElementById("pinOverlay").classList.add("show");
   setTimeout(()=>document.getElementById("pinInput").focus(),100);
 }
-function closePin(){ document.getElementById("pinOverlay").classList.remove("show"); }
+function closePin(){document.getElementById("pinOverlay").classList.remove("show");}
 function checkPin(){
-  const v = document.getElementById("pinInput").value;
-  if(v===PIN){
-    sessionStorage.setItem("admin","1");
-    closePin();
-    enterAdmin();
-  } else {
-    document.getElementById("pinError").textContent="Неверный PIN";
-  }
+  if(document.getElementById("pinInput").value===PIN){
+    sessionStorage.setItem("admin","1");closePin();enterAdmin();
+  }else{document.getElementById("pinError").textContent="Неверный PIN";}
 }
 
-/* ---------- Admin ---------- */
+/* Admin */
 function enterAdmin(){
   document.getElementById("viewer").style.display="none";
   document.getElementById("admin").style.display="block";
-  songs = loadSongs();
   renderList();
 }
 function exitAdmin(){
   document.getElementById("admin").style.display="none";
   document.getElementById("viewer").style.display="block";
-  renderViewer();
 }
 
 function renderList(){
-  const q = (document.getElementById("searchInput").value||"").toLowerCase();
-  const cur = getCurrent();
-  const list = document.getElementById("songList");
-  const filtered = songs.filter(s=>s.title.toLowerCase().includes(q));
-  if(filtered.length===0){
-    list.innerHTML='<div class="empty">Ничего не найдено</div>';
-    return;
-  }
-  list.innerHTML = filtered.map(s=>{
-    const active = cur && cur.id===s.id;
-    return '<div class="song-row">'+
-      '<div class="top">'+
-        '<div class="name">'+escapeHtml(s.title)+'</div>'+
-        (active?'<span class="active-badge">сейчас</span>':'')+
-      '</div>'+
+  if(document.getElementById("admin").style.display==="none")return;
+  const q=(document.getElementById("searchInput").value||"").toLowerCase();
+  const list=document.getElementById("songList");
+  const ids=Object.keys(songs).filter(id=>songs[id].title.toLowerCase().includes(q));
+  if(ids.length===0){list.innerHTML='<div class="empty">Ничего не найдено</div>';return;}
+  list.innerHTML=ids.map(id=>{
+    const s=songs[id];
+    const active=currentSong&&currentSong.title===s.title;
+    return '<div class="song-row"><div class="top"><div class="name">'+escapeHtml(s.title)+'</div>'+
+      (active?'<span class="active-badge">сейчас</span>':'')+'</div>'+
       '<div class="row-actions">'+
-        '<button class="mini show" onclick="showSong(\''+s.id+'\')">Показать</button>'+
-        '<button class="mini edit" onclick="editSong(\''+s.id+'\')">Изменить</button>'+
-        '<button class="mini del" onclick="deleteSong(\''+s.id+'\')">Удалить</button>'+
-      '</div>'+
-    '</div>';
+      '<button class="mini show" onclick="showSong(\''+id+'\')">Показать</button>'+
+      '<button class="mini edit" onclick="editSong(\''+id+'\')">Изменить</button>'+
+      '<button class="mini del" onclick="deleteSong(\''+id+'\')">Удалить</button>'+
+      '</div></div>';
   }).join("");
 }
 
 function showSong(id){
-  const s = songs.find(x=>x.id===id);
-  if(s){ setCurrent({id:s.id, title:s.title, lyrics:s.lyrics}); renderList(); }
+  const s=songs[id];
+  if(s)db.ref("currentSong").set({title:s.title,lyrics:s.lyrics});
 }
-
 function deleteSong(id){
-  if(!confirm("Удалить песню?")) return;
-  songs = songs.filter(s=>s.id!==id);
-  saveSongs();
-  renderList();
+  if(!confirm("Удалить песню?"))return;
+  db.ref("songs/"+id).remove();
 }
 
-/* ---------- Edit modal ---------- */
 function newSong(){
-  editingId = null;
+  editingId=null;
   document.getElementById("editTitle").textContent="Новая песня";
   document.getElementById("editName").value="";
   document.getElementById("editLyrics").value="";
   document.getElementById("editOverlay").classList.add("show");
 }
 function editSong(id){
-  const s = songs.find(x=>x.id===id);
-  if(!s) return;
-  editingId = id;
+  const s=songs[id];if(!s)return;
+  editingId=id;
   document.getElementById("editTitle").textContent="Редактирование";
   document.getElementById("editName").value=s.title;
   document.getElementById("editLyrics").value=s.lyrics;
   document.getElementById("editOverlay").classList.add("show");
 }
-function closeEdit(){ document.getElementById("editOverlay").classList.remove("show"); }
+function closeEdit(){document.getElementById("editOverlay").classList.remove("show");}
 function saveSong(){
-  const title = document.getElementById("editName").value.trim();
-  const lyrics = document.getElementById("editLyrics").value;
-  if(!title){ alert("Введите название"); return; }
+  const title=document.getElementById("editName").value.trim();
+  const lyrics=document.getElementById("editLyrics").value;
+  if(!title){alert("Введите название");return;}
   if(editingId){
-    const s = songs.find(x=>x.id===editingId);
-    s.title = title; s.lyrics = lyrics;
-    // если редактируем текущую — обновим у зрителей
-    const cur = getCurrent();
-    if(cur && cur.id===editingId) setCurrent({id:s.id,title,lyrics});
-  } else {
-    const id = "song_"+Date.now();
-    songs.push({id,title,lyrics});
+    db.ref("songs/"+editingId).set({title,lyrics});
+    if(currentSong&&currentSong.title===songs[editingId].title){
+      db.ref("currentSong").set({title,lyrics});
+    }
+  }else{
+    db.ref("songs").push({title,lyrics});
   }
-  saveSongs();
   closeEdit();
-  renderList();
 }
-
-/* ---------- init ---------- */
-renderViewer();
 </script>
 </body>
 </html>
