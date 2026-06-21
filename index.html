@@ -36,17 +36,19 @@
   .admin-head h2{font-size:22px;color:var(--accent);}
   .search{margin-bottom:14px;}
   .search input{margin-bottom:0;}
-  .song-row{background:var(--card);border:1px solid #2a2a33;border-radius:14px;padding:14px;margin-bottom:12px;}
+  .song-row{background:var(--card);border:1px solid #2a2a33;border-radius:14px;padding:14px;margin-bottom:12px;transition:all .15s;}
+  .song-row.is-active{border:2px solid var(--accent);background:#241f15;box-shadow:0 0 12px rgba(255,179,71,.25);}
   .song-row .top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
   .song-row .name{font-size:17px;font-weight:600;flex:1;}
+  .song-row.is-active .name{color:var(--accent);}
   .row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
   .mini{flex:1;min-width:90px;padding:12px;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;}
   .mini.show{background:var(--accent);color:#1a1a20;}
+  .mini.show:disabled{opacity:.5;cursor:default;}
   .mini.edit{background:#2a2a33;color:var(--text);}
   .mini.del{background:#3a1f24;color:#ff8080;}
-  .active-badge{font-size:12px;color:var(--accent);border:1px solid var(--accent);padding:2px 8px;border-radius:20px;}
+  .active-badge{font-size:12px;color:#1a1a20;background:var(--accent);padding:3px 10px;border-radius:20px;font-weight:700;white-space:nowrap;}
   .add-btn{margin-bottom:20px;}
-  .status{text-align:center;font-size:12px;color:var(--muted);margin-bottom:10px;}
 </style>
 </head>
 <body>
@@ -102,7 +104,6 @@
   </div>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
@@ -129,16 +130,6 @@ const defaultSongs = {
 Но если есть в кармане пачка сигарет
 Значит, всё не так уж плохо на сегодняшний день
 И билет на самолёт с серебристым крылом
-Что, взлетая, оставляет земле лишь тень
-
-И никто не хотел быть виноватым без вина
-И никто не хотел руками жар загребать
-А без музыки на миру смерть не красна
-А без музыки не хочется пропадать
-
-Но если есть в кармане пачка сигарет
-Значит, всё не так уж плохо на сегодняшний день
-И билет на самолёт с серебристым крылом
 Что, взлетая, оставляет земле лишь тень`},
   osen:{title:"ДДТ — Осень",lyrics:`Что такое осень? Это небо
 Плачущее небо под ногами
@@ -148,194 +139,33 @@ const defaultSongs = {
 Осень, в небе жгут корабли
 Осень, мне бы прочь от земли
 Там, где в море тонет печаль
-Осень — тёмная даль
-
-Что такое осень? Это камни
-Верность над чернеющей Невою
-Осень вновь напомнила душе о самом главном:
-Осень, я опять лишён покоя
-
-Осень, в небе жгут корабли
-Осень, мне бы прочь от земли
-Там, где в море тонет печаль
-Осень — тёмная даль
-
-Что такое осень? Это ветер
-Вновь играет рваными цепями
-Осень, доползём ли, долетим ли до ответа?
-Что же будет с Родиной и с нами?
-
-Осень, в небе жгут корабли
-Осень, мне бы прочь от земли
-Там, где в море тонет печаль
-Осень — тёмная даль
-
-Тает стаей город во мгле
-Осень, что я знал о тебе?
-Сколько будет рваться листва
-Осень вечно права`},
-  rayony:{title:"Звери — Районы, кварталы",lyrics:`Больше нечего ловить
-Всё, что надо, я поймал
-Надо сразу уходить
-Чтоб никто не привыкал
-
-Ярко-жёлтые очки
-Два сердечка на брелке
-Развесёлые зрачки
-Твоё имя на руке
-
-Районы, кварталы, жилые массивы
-Я ухожу, ухожу красиво
-Районы, кварталы, жилые массивы
-Я ухожу, ухожу красиво
-
-У тебя всё будет класс
-Будут ближе облака
-Я хочу как в первый раз
-И поэтому пока
-
-Ярко-жёлтые очки
-Два сердечка на брелке
-Развесёлые зрачки
-Я шагаю налегке
-
-Районы, кварталы, жилые массивы
-Я ухожу, ухожу красиво
-
-Вот и всё, никто не ждёт
-И никто не в дураках
-Кто-то любит, кто-то врёт
-И летает в облаках
-
-Районы, кварталы, жилые массивы
-Я ухожу, ухожу красиво
-Я ухожу, ухожу красиво`},
+Осень — тёмная даль`},
   peremen:{title:"Цой — Перемен",lyrics:`Вместо тепла — зелень стекла
 Вместо огня — дым
 Из сетки календаря выхвачен день
-Красное солнце сгорает дотла
-День догорает с ним
-На пылающий город падает тень
 
 Перемен требуют наши сердца
 Перемен требуют наши глаза
 В нашем смехе, и в наших слезах, и в пульсации вен
 Перемен
-Мы ждём перемен
-
-Электрический свет продолжает наш день
-И коробка от спичек пуста
-Но на кухне синим цветком горит газ
-Сигареты в руках, чай на столе
-Эта схема проста
-И больше нет ничего — всё находится в нас
-
-Перемен требуют наши сердца
-Перемен требуют наши глаза
-В нашем смехе, и в наших слезах, и в пульсации вен
-Перемен
-Мы ждём перемен
-
-Мы не можем похвастаться мудростью глаз
-И умелыми жестами рук
-Нам не нужно всё это, чтобы друг друга понять
-Сигареты в руках, чай на столе
-Так замыкается круг
-И вдруг нам становится страшно что-то менять
-
-Перемен требуют наши сердца
-Перемен требуют наши глаза
-В нашем смехе, и в наших слезах, и в пульсации вен
-Перемен
-Мы ждём перемен`},
-  mig:{title:"Анофриев — Есть только миг",lyrics:`Призрачно всё в этом мире бушующем
-Есть только миг, за него и держись
-Есть только миг между прошлым и будущим
-Именно он называется жизнь
-
-Вечный покой сердце, вряд ли, обрадует
-Вечный покой для седых пирамид
-А для звезды, что сорвалась и падает
-Есть только миг, ослепительный миг
-
-Пусть этот мир вдаль летит сквозь столетия
-Но не всегда по дороге мне с ним
-Чем дорожу, чем рискую на свете я
-Мигом одним, только мигом одним
-
-Счастье дано, повстречать иль беду ещё
-Есть только миг, за него и держись
-Есть только миг между прошлым и будущим
-Именно он называется жизнь`},
-  molody:{title:"Градский — Как молоды мы были",lyrics:`Оглянись, незнакомый прохожий
-Мне твой взгляд неподкупный знаком
-Может, я это, — только моложе
-Не всегда мы себя узнаём
-
-Ничто на Земле не проходит бесследно
-И юность ушедшая всё же бессмертна
-Как молоды мы были
-Как молоды мы были
-Как искренне любили
-Как верили в себя!
-
-Нас тогда без усмешек встречали
-Все цветы на дорогах Земли
-Мы друзей за ошибки прощали
-Лишь измены простить не могли
-
-Ничто на Земле не проходит бесследно
-И юность ушедшая всё же бессмертна
-Как молоды мы были
-Как молоды мы были
-Как искренне любили
-Как верили в себя!
-
-Первый тайм мы уже отыграли
-И одно лишь сумели понять:
-Чтоб тебя на Земле не теряли
-Постарайся себя не терять!
-
-Ничто на Земле не проходит бесследно
-И юность ушедшая всё же бессмертна
-Как молоды мы были
-Как молоды мы были
-Как искренне любили
-Как верили в себя!
-
-В небесах отгорели зарницы
-И в сердцах утихает гроза
-Не забыть нам любимые лица
-Не забыть нам родные глаза...
-
-Ничто на Земле не проходит бесследно
-И юность ушедшая всё же бессмертна
-Как молоды мы были
-Как молоды мы были
-��ак искренне любили
-Как верили в себя!`}
+Мы ждём перемен`}
 };
 
 let songs = {};
 let currentSong = null;
 let editingId = null;
 
-/* подписка на песни */
 db.ref("songs").on("value", snap=>{
   const val = snap.val();
-  if(!val){
-    // первый запуск — заливаем песни по умолчанию
-    db.ref("songs").set(defaultSongs);
-    return;
-  }
+  if(!val){db.ref("songs").set(defaultSongs);return;}
   songs = val;
   renderList();
 });
 
-/* подписка на текущую песню */
 db.ref("currentSong").on("value", snap=>{
   currentSong = snap.val();
   renderViewer();
+  renderList();
 });
 
 function escapeHtml(t){return (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
@@ -346,7 +176,6 @@ function renderViewer(){
   box.innerHTML='<div class="song-title">'+escapeHtml(currentSong.title)+'</div><div class="lyrics">'+escapeHtml(currentSong.lyrics)+'</div>';
 }
 
-/* PIN */
 function openPin(){
   if(sessionStorage.getItem("admin")==="1"){enterAdmin();return;}
   document.getElementById("pinError").textContent="";
@@ -361,7 +190,6 @@ function checkPin(){
   }else{document.getElementById("pinError").textContent="Неверный PIN";}
 }
 
-/* Admin */
 function enterAdmin(){
   document.getElementById("viewer").style.display="none";
   document.getElementById("admin").style.display="block";
@@ -381,10 +209,10 @@ function renderList(){
   list.innerHTML=ids.map(id=>{
     const s=songs[id];
     const active=currentSong&&currentSong.title===s.title;
-    return '<div class="song-row"><div class="top"><div class="name">'+escapeHtml(s.title)+'</div>'+
-      (active?'<span class="active-badge">сейчас</span>':'')+'</div>'+
+    return '<div class="song-row'+(active?' is-active':'')+'"><div class="top"><div class="name">'+escapeHtml(s.title)+'</div>'+
+      (active?'<span class="active-badge">▶ сейчас</span>':'')+'</div>'+
       '<div class="row-actions">'+
-      '<button class="mini show" onclick="showSong(\''+id+'\')">Показать</button>'+
+      '<button class="mini show" onclick="showSong(\''+id+'\')"'+(active?' disabled':'')+'>'+(active?'Показывается':'Показать')+'</button>'+
       '<button class="mini edit" onclick="editSong(\''+id+'\')">Изменить</button>'+
       '<button class="mini del" onclick="deleteSong(\''+id+'\')">Удалить</button>'+
       '</div></div>';
@@ -421,8 +249,9 @@ function saveSong(){
   const lyrics=document.getElementById("editLyrics").value;
   if(!title){alert("Введите название");return;}
   if(editingId){
+    const oldTitle=songs[editingId].title;
     db.ref("songs/"+editingId).set({title,lyrics});
-    if(currentSong&&currentSong.title===songs[editingId].title){
+    if(currentSong&&currentSong.title===oldTitle){
       db.ref("currentSong").set({title,lyrics});
     }
   }else{
