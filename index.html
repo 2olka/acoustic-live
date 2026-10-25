@@ -25,7 +25,7 @@
   .overlay.show{display:flex;}
   .modal{background:var(--card);border-radius:18px;padding:24px;width:100%;max-width:340px;text-align:center;}
   .modal h2{margin-bottom:16px;font-size:20px;}
-  input[type=password],input[type=text],textarea{width:100%;background:#0f0f12;border:1px solid #2a2a33;color:var(--text);padding:14px;border-radius:12px;font-size:18px;margin-bottom:12px;font-family:inherit;}
+  input[type=email],input[type=password],input[type=text],textarea{width:100%;background:#0f0f12;border:1px solid #2a2a33;color:var(--text);padding:14px;border-radius:12px;font-size:18px;margin-bottom:12px;font-family:inherit;}
   textarea{min-height:200px;resize:vertical;line-height:1.5;}
   .btn{display:block;width:100%;background:var(--accent);color:#1a1a20;border:none;padding:16px;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;margin-top:6px;}
   .btn:active{opacity:.85;}
@@ -49,6 +49,11 @@
   .mini.del{background:#3a1f24;color:#ff8080;}
   .active-badge{font-size:12px;color:#1a1a20;background:var(--accent);padding:3px 10px;border-radius:20px;font-weight:700;white-space:nowrap;}
   .add-btn{margin-bottom:20px;}
+  .btn:disabled,.mini:disabled{opacity:.5;cursor:default;}
+  input[aria-invalid="true"]{border-color:#ff8080;}
+  .modal{max-height:90vh;overflow-y:auto;}
+  .field-label{display:block;text-align:left;color:var(--muted);font-size:14px;margin-bottom:4px;}
+  .status{color:var(--muted);text-align:center;margin:12px 0;}
 </style>
 </head>
 <body>
@@ -63,33 +68,38 @@
       <a href="https://vk.ru/club238122270" target="_blank" rel="noopener">VK</a>
       <a href="https://www.instagram.com/a_coustic.live" target="_blank" rel="noopener">Instagram</a>
     </div>
+    <div id="connectionStatus" class="status" role="status"></div>
     <div id="viewerContent">
       <div class="empty">Подключение…</div>
     </div>
   </div>
-  <button class="gear" onclick="openPin()">⚙ Управление</button>
+  <button class="gear" onclick="openLogin()">⚙ Управление</button>
 </div>
 
 <div id="admin">
   <div class="wrap">
     <div class="admin-head">
       <h2>Панель управления</h2>
-      <button class="btn secondary" style="width:auto;padding:10px 16px;margin:0" onclick="exitAdmin()">Выйти</button>
+      <button class="btn secondary" style="width:auto;padding:10px 16px;margin:0" id="logoutButton" onclick="exitAdmin()">Выйти из аккаунта</button>
     </div>
     <button class="btn add-btn" onclick="newSong()">＋ Добавить песню</button>
     <div class="search"><input type="text" id="searchInput" placeholder="Поиск песни…" oninput="renderList()"></div>
+    <div id="adminError" class="error" role="alert"></div>
     <div id="songList"></div>
   </div>
 </div>
 
-<div class="overlay" id="pinOverlay">
-  <div class="modal">
-    <h2>Вход в управление</h2>
-    <input type="password" id="pinInput" inputmode="numeric" placeholder="PIN-код" onkeydown="if(event.key==='Enter')checkPin()">
-    <div class="error" id="pinError"></div>
-    <button class="btn" onclick="checkPin()">Войти</button>
-    <button class="btn secondary" onclick="closePin()">Отмена</button>
-  </div>
+<div class="overlay" id="loginOverlay" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <form class="modal" id="loginForm" novalidate>
+    <h2 id="loginTitle">Вход организатора</h2>
+    <label class="field-label" for="loginEmail">Email</label>
+    <input type="email" id="loginEmail" autocomplete="username" required placeholder="name@mail.ru" aria-describedby="loginError">
+    <label class="field-label" for="loginPassword">Пароль</label>
+    <input type="password" id="loginPassword" autocomplete="current-password" required placeholder="Пароль" aria-describedby="loginError">
+    <div class="error" id="loginError" role="alert"></div>
+    <button class="btn" id="loginButton" type="submit">Войти</button>
+    <button class="btn secondary" id="cancelLoginButton" type="button" onclick="closeLogin()">Отмена</button>
+  </form>
 </div>
 
 <div class="overlay" id="editOverlay">
@@ -99,13 +109,15 @@
     <input type="text" id="editName" placeholder="Название песни">
     <label style="font-size:14px;color:var(--muted);">Текст</label>
     <textarea id="editLyrics" placeholder="Текст песни…"></textarea>
-    <button class="btn" onclick="saveSong()">Сохранить</button>
-    <button class="btn secondary" onclick="closeEdit()">Отмена</button>
+    <div class="error" id="editError" role="alert"></div>
+    <button class="btn" id="saveButton" onclick="saveSong()">Сохранить</button>
+    <button class="btn secondary" id="cancelEditButton" onclick="closeEdit()">Отмена</button>
   </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyBXDmNyhJl5EiNstDIuKGh0EgQDVEIKuPg",
@@ -119,146 +131,255 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const PIN = "5899";
-
-const defaultSongs = {
-  pachka:{title:"Цой — Пачка сигарет",lyrics:`Я сижу и смотрю в чужое небо из чужого окна
-И не вижу ни одной знакомой звезды
-Я ходил по всем дорогам и туда, и сюда
-Обернулся и не смог разглядеть следы
-
-Но если есть в кармане пачка сигарет
-Значит, всё не так уж плохо на сегодняшний день
-И билет на самолёт с серебристым крылом
-Что, взлетая, оставляет земле лишь тень`},
-  osen:{title:"ДДТ — Осень",lyrics:`Что такое осень? Это небо
-Плачущее небо под ногами
-В лужах разлетаются птицы с облаками
-Осень, я давно с тобою не был
-
-Осень, в небе жгут корабли
-Осень, мне бы прочь от земли
-Там, где в море тонет печаль
-Осень — тёмная даль`},
-  peremen:{title:"Цой — Перемен",lyrics:`Вместо тепла — зелень стекла
-Вместо огня — дым
-Из сетки календаря выхвачен день
-
-Перемен требуют наши сердца
-Перемен требуют наши глаза
-В нашем смехе, и в наших слезах, и в пульсации вен
-Перемен
-Мы ждём перемен`}
-};
-
+// Укажите UID из Authentication → Users проекта acoustic-live.
+// Проверка в интерфейсе не заменяет Firebase Security Rules.
+const ORGANIZER_UID = "CVfvp7Y334QXUAcFFM0oZefHM8c2";
+const auth = firebase.auth();
+const $ = id => document.getElementById(id);
 let songs = {};
 let currentSong = null;
 let editingId = null;
+let authReady = false;
+let loginBusy = false;
+let writeBusy = false;
+let connected = false;
+let catalogReady = false;
+let catalogError = "";
+let catalogListener = null;
+let catalogGeneration = 0;
 
-db.ref("songs").on("value", snap=>{
-  const val = snap.val();
-  if(!val){db.ref("songs").set(defaultSongs);return;}
-  songs = val;
-  renderList();
+function configured(){return ORGANIZER_UID !== "REPLACE_WITH_ORGANIZER_UID" && ORGANIZER_UID.length > 0;}
+function isOrganizer(){return configured() && auth.currentUser?.uid === ORGANIZER_UID;}
+function errorText(error){
+  switch(error?.code){
+    case "auth/invalid-email":
+    case "auth/invalid-credential":
+    case "auth/invalid-login-credentials":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+    case "auth/user-disabled": return "Не удалось войти. Проверьте email и пароль.";
+    case "auth/network-request-failed": return "Нет связи с сервером. Проверьте интернет.";
+    case "auth/too-many-requests": return "Слишком много попыток. Попробуйте позже.";
+    case "PERMISSION_DENIED":
+    case "permission_denied": return "Нет доступа. Проверьте учётную запись и правила базы.";
+    default: return "Не удалось выполнить действие. Попробуйте ещё раз.";
+  }
+}
+function showViewer(){
+  $("admin").style.display="none";
+  $("viewer").style.display="block";
+}
+function stopCatalog(){
+  catalogGeneration++;
+  if(catalogListener) db.ref("songs").off("value", catalogListener);
+  catalogListener=null;
+  songs={}; catalogReady=false; catalogError="";
+  $("songList").replaceChildren();
+}
+function startCatalog(){
+  stopCatalog();
+  const generation=catalogGeneration;
+  catalogListener=snap=>{
+    if(generation!==catalogGeneration || !isOrganizer()) return;
+    const value=snap.val() || {};
+    songs=Object.fromEntries(Object.entries(value).filter(([,song])=>
+      song && typeof song.title==="string" && typeof song.lyrics==="string"));
+    catalogReady=true; catalogError=""; renderList();
+  };
+  db.ref("songs").on("value",catalogListener,error=>{
+    if(generation!==catalogGeneration) return;
+    catalogError=errorText(error); catalogReady=false; songs={}; renderList();
+  });
+}
+auth.onAuthStateChanged(user=>{
+  authReady=true;
+  if(isOrganizer()){
+    startCatalog();
+  } else {
+    stopCatalog(); showViewer();
+    $("editOverlay").classList.remove("show");
+    $("editName").value=""; $("editLyrics").value="";
+    if(user) $("loginError").textContent="У этой учётной записи нет прав организатора.";
+  }
 });
 
-db.ref("currentSong").on("value", snap=>{
-  currentSong = snap.val();
-  renderViewer();
+// Зрителю нужна только текущая песня; каталог слушаем после входа организатора.
+db.ref("currentSong").on("value",snap=>{
+  currentSong=snap.val(); renderViewer(); renderList();
+},()=>{
+  $("connectionStatus").textContent="Не удалось получить песню. Обновления недоступны.";
+});
+db.ref(".info/connected").on("value",snap=>{
+  connected=snap.val()===true;
+  $("connectionStatus").textContent=connected ? "" : "Нет связи с сервером. Новые переключения временно недоступны.";
   renderList();
 });
-
-function escapeHtml(t){return (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-
 function renderViewer(){
-  const box=document.getElementById("viewerContent");
-  if(!currentSong){box.innerHTML='<div class="empty">Ожидаем начало выступления…</div>';return;}
-  box.innerHTML='<div class="song-title">'+escapeHtml(currentSong.title)+'</div><div class="lyrics">'+escapeHtml(currentSong.lyrics)+'</div>';
+  const box=$("viewerContent"); box.replaceChildren();
+  if(!currentSong){
+    const empty=document.createElement("div"); empty.className="empty";
+    empty.textContent="Ожидаем начало выступления…"; box.append(empty); return;
+  }
+  const title=document.createElement("div"); title.className="song-title";
+  title.textContent=typeof currentSong.title==="string" ? currentSong.title : "Без названия";
+  const lyrics=document.createElement("div"); lyrics.className="lyrics";
+  lyrics.textContent=typeof currentSong.lyrics==="string" ? currentSong.lyrics : "Текст отсутствует.";
+  box.append(title,lyrics);
 }
-
-function openPin(){
-  if(sessionStorage.getItem("admin")==="1"){enterAdmin();return;}
-  document.getElementById("pinError").textContent="";
-  document.getElementById("pinInput").value="";
-  document.getElementById("pinOverlay").classList.add("show");
-  setTimeout(()=>document.getElementById("pinInput").focus(),100);
+function setLoginBusy(value){
+  loginBusy=value;
+  ["loginEmail","loginPassword","loginButton","cancelLoginButton"].forEach(id=>$(id).disabled=value);
+  $("loginButton").textContent=value ? "Входим…" : "Войти";
 }
-function closePin(){document.getElementById("pinOverlay").classList.remove("show");}
-function checkPin(){
-  if(document.getElementById("pinInput").value===PIN){
-    sessionStorage.setItem("admin","1");closePin();enterAdmin();
-  }else{document.getElementById("pinError").textContent="Неверный PIN";}
+function openLogin(){
+  if(isOrganizer()){enterAdmin();return;}
+  $("loginError").textContent=configured() ? "" : "Вход ещё не настроен. Обратитесь к организатору.";
+  $("loginPassword").value="";
+  ["loginEmail","loginPassword"].forEach(id=>$(id).removeAttribute("aria-invalid"));
+  $("loginOverlay").classList.add("show"); $("loginEmail").focus();
 }
-
+function closeLogin(){
+  if(loginBusy) return;
+  $("loginOverlay").classList.remove("show"); $("loginPassword").value="";
+  document.querySelector(".gear").focus();
+}
+["loginEmail","loginPassword"].forEach(id=>$(id).addEventListener("input",()=>{
+  $(id).removeAttribute("aria-invalid"); $("loginError").textContent="";
+}));
+$("loginForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  if(loginBusy) return;
+  if(!configured()){$("loginError").textContent="Вход ещё не настроен. Обратитесь к организатору.";return;}
+  if(!authReady){$("loginError").textContent="Проверяем состояние входа. Попробуйте через несколько секунд.";return;}
+  const email=$("loginEmail").value.trim();
+  $("loginEmail").value=email;
+  const password=$("loginPassword").value;
+  const emailInvalid=!email || !$("loginEmail").validity.valid;
+  const passwordInvalid=!password;
+  $("loginEmail").setAttribute("aria-invalid",String(emailInvalid));
+  $("loginPassword").setAttribute("aria-invalid",String(passwordInvalid));
+  if(emailInvalid || passwordInvalid){$("loginError").textContent="Введите корректный email и заполните пароль.";return;}
+  $("loginError").textContent=""; setLoginBusy(true);
+  try {
+    await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+    const credential=await auth.signInWithEmailAndPassword(email,password);
+    if(credential.user.uid!==ORGANIZER_UID){
+      await auth.signOut();
+      $("loginError").textContent="У этой учётной записи нет прав организатора.";
+      return;
+    }
+    $("loginOverlay").classList.remove("show"); enterAdmin();
+  } catch(error){
+    $("loginError").textContent=errorText(error);
+    if(["auth/invalid-credential","auth/invalid-login-credentials","auth/wrong-password","auth/user-not-found"].includes(error.code)){
+      ["loginEmail","loginPassword"].forEach(id=>$(id).setAttribute("aria-invalid","true"));
+    }
+  } finally {$("loginPassword").value="";setLoginBusy(false);}
+});
 function enterAdmin(){
-  document.getElementById("viewer").style.display="none";
-  document.getElementById("admin").style.display="block";
-  renderList();
+  if(!isOrganizer()) return;
+  $("viewer").style.display="none"; $("admin").style.display="block";
+  $("adminError").textContent=""; renderList();
 }
-function exitAdmin(){
-  document.getElementById("admin").style.display="none";
-  document.getElementById("viewer").style.display="block";
+async function exitAdmin(){
+  if(writeBusy) return;
+  $("logoutButton").disabled=true;
+  try {await auth.signOut(); showViewer();}
+  catch(error){$("adminError").textContent=errorText(error);}
+  finally {$("logoutButton").disabled=false;}
 }
-
+function activeSong(id){
+  if(!currentSong) return false;
+  if(currentSong.id) return currentSong.id===id;
+  return currentSong.title===songs[id]?.title && currentSong.lyrics===songs[id]?.lyrics;
+}
 function renderList(){
-  if(document.getElementById("admin").style.display==="none")return;
-  const q=(document.getElementById("searchInput").value||"").toLowerCase();
-  const list=document.getElementById("songList");
+  if($("admin").style.display!=="block") return;
+  const list=$("songList");list.replaceChildren();
+  const q=$("searchInput").value.trim().toLowerCase();
   const ids=Object.keys(songs).filter(id=>songs[id].title.toLowerCase().includes(q));
-  if(ids.length===0){list.innerHTML='<div class="empty">Ничего не найдено</div>';return;}
-  list.innerHTML=ids.map(id=>{
-    const s=songs[id];
-    const active=currentSong&&currentSong.title===s.title;
-    return '<div class="song-row'+(active?' is-active':'')+'"><div class="top"><div class="name">'+escapeHtml(s.title)+'</div>'+
-      (active?'<span class="active-badge">▶ сейчас</span>':'')+'</div>'+
-      '<div class="row-actions">'+
-      '<button class="mini show" onclick="showSong(\''+id+'\')"'+(active?' disabled':'')+'>'+(active?'Показывается':'Показать')+'</button>'+
-      '<button class="mini edit" onclick="editSong(\''+id+'\')">Изменить</button>'+
-      '<button class="mini del" onclick="deleteSong(\''+id+'\')">Удалить</button>'+
-      '</div></div>';
-  }).join("");
+  const message=catalogError || (!catalogReady ? "Загружаем каталог…" :
+    !Object.keys(songs).length ? "В каталоге пока нет песен." : !ids.length ? "Ничего не найдено" : "");
+  if(message){const el=document.createElement("div");el.className="empty";el.textContent=message;list.append(el);return;}
+  ids.forEach(id=>{
+    const active=activeSong(id);
+    const row=document.createElement("div");row.className="song-row"+(active?" is-active":"");
+    const top=document.createElement("div");top.className="top";
+    const name=document.createElement("div");name.className="name";name.textContent=songs[id].title;top.append(name);
+    if(active){const badge=document.createElement("span");badge.className="active-badge";badge.textContent="▶ сейчас";top.append(badge);}
+    const actions=document.createElement("div");actions.className="row-actions";
+    [[active?"Показывается":"Показать","show",()=>showSong(id),active],
+     ["Изменить","edit",()=>editSong(id),false],
+     ["Удалить","del",()=>deleteSong(id),false]].forEach(([label,kind,handler,disabled])=>{
+       const button=document.createElement("button");button.className="mini "+kind;button.textContent=label;
+       button.disabled=disabled || writeBusy || !connected;
+       button.addEventListener("click",handler);actions.append(button);
+     });
+    row.append(top,actions);list.append(row);
+  });
 }
-
-function showSong(id){
-  const s=songs[id];
-  if(s)db.ref("currentSong").set({title:s.title,lyrics:s.lyrics});
+function canWrite(){
+  if(!isOrganizer()){$("adminError").textContent="Для управления войдите как организатор.";return false;}
+  if(!connected){$("adminError").textContent="Нет связи с сервером. Дождитесь подключения.";return false;}
+  return !writeBusy;
 }
-function deleteSong(id){
-  if(!confirm("Удалить песню?"))return;
-  db.ref("songs/"+id).remove();
+function setWriteBusy(value){
+  writeBusy=value;
+  ["saveButton","cancelEditButton","logoutButton","editName","editLyrics"].forEach(id=>$(id).disabled=value);
+  document.querySelector(".add-btn").disabled=value;
+  $("saveButton").textContent=value?"Сохраняем…":"Сохранить";renderList();
 }
-
+async function writeAction(action,errorId="adminError"){
+  if(!canWrite()){
+    if(errorId!=="adminError") $(errorId).textContent=$("adminError").textContent;
+    return false;
+  }
+  $(errorId).textContent="";setWriteBusy(true);
+  try {await action();return true;}
+  catch(error){$(errorId).textContent=errorText(error);return false;}
+  finally {setWriteBusy(false);}
+}
+async function showSong(id){
+  const song=songs[id];if(!song)return;
+  await writeAction(()=>db.ref("currentSong").set({id,title:song.title,lyrics:song.lyrics}));
+}
+async function deleteSong(id){
+  if(!canWrite() || !songs[id] || !confirm("Удалить песню из каталога? Текущий показ останется на экране.")) return;
+  await writeAction(()=>db.ref("songs").child(id).remove());
+}
 function newSong(){
-  editingId=null;
-  document.getElementById("editTitle").textContent="Новая песня";
-  document.getElementById("editName").value="";
-  document.getElementById("editLyrics").value="";
-  document.getElementById("editOverlay").classList.add("show");
+  if(!canWrite())return;
+  editingId=null; $("editTitle").textContent="Новая песня";
+  $("editName").value=""; $("editLyrics").value=""; $("editError").textContent="";
+  $("editOverlay").classList.add("show");$("editName").focus();
 }
 function editSong(id){
-  const s=songs[id];if(!s)return;
-  editingId=id;
-  document.getElementById("editTitle").textContent="Редактирование";
-  document.getElementById("editName").value=s.title;
-  document.getElementById("editLyrics").value=s.lyrics;
-  document.getElementById("editOverlay").classList.add("show");
+  if(!canWrite())return;
+  const song=songs[id];if(!song)return;
+  editingId=id;$("editTitle").textContent="Редактирование";
+  $("editName").value=song.title;$("editLyrics").value=song.lyrics;$("editError").textContent="";
+  $("editOverlay").classList.add("show");$("editName").focus();
 }
-function closeEdit(){document.getElementById("editOverlay").classList.remove("show");}
-function saveSong(){
-  const title=document.getElementById("editName").value.trim();
-  const lyrics=document.getElementById("editLyrics").value;
-  if(!title){alert("Введите название");return;}
-  if(editingId){
-    const oldTitle=songs[editingId].title;
-    db.ref("songs/"+editingId).set({title,lyrics});
-    if(currentSong&&currentSong.title===oldTitle){
-      db.ref("currentSong").set({title,lyrics});
-    }
-  }else{
-    db.ref("songs").push({title,lyrics});
-  }
-  closeEdit();
+function closeEdit(){
+  if(writeBusy)return;
+  $("editOverlay").classList.remove("show");
 }
+async function saveSong(){
+  if(writeBusy)return;
+  const title=$("editName").value.trim(), lyrics=$("editLyrics").value;
+  if(!title){$("editError").textContent="Введите название.";return;}
+  if(editingId && !songs[editingId]){$("editError").textContent="Песня уже удалена. Создайте новую запись.";return;}
+  const id=editingId || db.ref("songs").push().key;
+  // Одна атомарная операция для каталога и текущего показа.
+  const updates={};updates["songs/"+id]={title,lyrics};
+  if(editingId && activeSong(editingId))updates.currentSong={id,title,lyrics};
+  if(await writeAction(()=>db.ref().update(updates),"editError"))closeEdit();
+}
+document.addEventListener("keydown",event=>{
+  if(event.key!=="Escape")return;
+  if($("editOverlay").classList.contains("show"))closeEdit();
+  else if($("loginOverlay").classList.contains("show"))closeLogin();
+});
 </script>
 </body>
 </html>
